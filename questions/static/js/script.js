@@ -1,5 +1,9 @@
 let apiPage = 1;
 let controller, scene;
+
+/*
+    Uses event delegation to set up listeners on dom elements
+*/
 function init() {
     let pane1 = document.querySelector("li[data-target='pane-1']");
     if (pane1) {
@@ -65,6 +69,10 @@ function init() {
 
 init()
 
+
+/*
+    Uses event delegation to set up listeners on question/answer blocks
+*/
 function setUpQuestionListeners(e) {
     let et = e.target;
 
@@ -104,10 +112,39 @@ function setUpQuestionListeners(e) {
     }
 }
 
+
 function loadTenQuestions() {
-    
     requestAQuestion(apiPage);
     apiPage += 1;
+    
+}
+
+/*
+    Sends get request to a page of the api questions list
+*/
+function requestAQuestion(page) {
+
+    $.ajax({
+        url: `/api/questions/?page=${page}`,
+        method: 'GET',
+        contentType: 'application/json'
+    }).done(function(response) {
+        
+        loadQuestionsToDom(response.results);
+        
+        scene.update();
+        $("#loader").removeClass("active")
+    }).fail(function(response) {
+        $('#loader').remove();
+
+    });
+
+}
+
+function loadQuestionsToDom(questions){
+    for (question of questions) {
+        document.getElementById('question-list').insertAdjacentHTML('beforeend', questionHTML(question));
+    }
     
 }
 
@@ -599,32 +636,6 @@ function startQuestions() {
 }
 startQuestions()
 
-function requestAQuestion(page) {
-
-    $.ajax({
-        url: `/api/questions/?page=${page}`,
-        method: 'GET',
-        contentType: 'application/json'
-    }).done(function(response) {
-        
-        loadQuestionsToDom(response.results);
-        
-        scene.update();
-        $("#loader").removeClass("active")
-    }).fail(function(response) {
-        $('#loader').remove();
-
-    });
-
-}
-
-
-function loadQuestionsToDom(questions){
-    for (question of questions) {
-        document.getElementById('question-list').insertAdjacentHTML('beforeend', questionHTML(question));
-    }
-    
-}
 
 function setupCSRFAjax () {
     var csrftoken = Cookies.get('csrftoken')
